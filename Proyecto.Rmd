@@ -1,0 +1,77 @@
+---
+title: "Taller aplicado"
+output: pdf_document
+date: "2025-02-06"
+---
+
+El siguiente taller aplicado lo realizaron: Miguel Ángel Peña Cedeño, Gabriel Puello, Valentina ..., Juan Jose...
+
+La base de datos seleccionada fue de "Casos_positivos_de_COVID-19_en_Colombia._(fecha de descarga).csv" tomada del siguiente link: https://www.datos.gov.co/Salud-y-Protecci-n-Social/Casos-positivos-de-COVID-19-en-Colombia-/gt2j-8ykr/about_data
+
+Se trata de un dataset realizado por el Instituto Nacional de Salud acerca de los casos positivos de COVID-19 en Colombia, estos datos han sido recopilados desde 2020 y la ultima actualización fue realizada el 14 de agosto de 2024. Son sumamente relevantes en materia de salud para el país y su analisis puede arrojar datos valiosos para preparar mejor a la sociedad colombiana en caso de una futura pandemia ya que este se trata de un fenomeno que eventualmente volverá a ocurrir.
+
+Iniciamos nuestro analisis creando una variable mas corta que va a leer de la base de datos que esta en formato .csv, adicionalmente realizamos str(db) para empezar a ver de que forma esta estructurado el dataset.
+
+```{r}
+db <- read.csv("Casos_positivos_de_COVID-19_en_Colombia._20250210.csv")
+str(db)
+```
+
+Encontramos un total de 23 variables y 6.390.971 observaciones en el dataset, de estas se realizo una selección intencional de las variables que consideramos mas relevantes para el analisis, ya que variables como "ID.de.caso" no resultaban especialmente utiles a la hora del analisis, nos quedamos con estas X variables:
+
+ 1. fecha.reporte.web           : chr  
+ 3. Fecha.de.notificación       : chr  
+ 4. Código.DIVIPOLA.departamento: int  
+ 5. Nombre.departamento         : chr  
+ 6. Código.DIVIPOLA.municipio   : int 
+ 7. Nombre.municipio            : chr  
+ 8.  Edad                      : Variable cuantitativa de razon
+ 9. Unidad.de.medida.de.edad    : int  
+ 10. Sexo                      : Variable cualitativa nominal              AQUI HACE FALTA EXPLICAR LAS VARIABLES
+ 11. Tipo.de.contagio          : Variable cualitativa nominal 
+ $ Ubicación.del.caso          : chr  
+ $ Estado                      : chr 
+ $ Código.ISO.del.país         : int  
+ $ Nombre.del.país             : chr  
+ $ Recuperado                  : chr  
+ $ Fecha.de.inicio.de.síntomas : chr 
+ $ Fecha.de.muerte             : chr  
+ $ Fecha.de.diagnóstico        : chr  
+ $ Fecha.de.recuperación       : chr  
+ $ Tipo.de.recuperación        : chr  
+ $ Pertenencia.étnica          : int 
+ $ Nombre.del.grupo.étnico     : chr  
+ 
+
+A continuacion hacemos la presentacion de los datos sirviendonos de crear intervalos para representar la edad de forma mas comoda ya que dentro de esta variable tenemos valores desde 1 hasta 114, adicionalmente al momento de organizar y graficar los datos vamos a ignorar todos los datos nulos
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(scales)
+
+# Cargar datos
+db <- read.csv("Casos_positivos_de_COVID-19_en_Colombia._20250210.csv")
+
+# Crear intervalos de edad
+bins <- seq(min(db$Edad, na.rm = TRUE), max(db$Edad, na.rm = TRUE), by = 10)
+
+# Agrupar datos por rango de edad
+tabla_frecuencia <- db %>%
+  mutate(Edad = cut(Edad, breaks = bins, include.lowest = TRUE)) %>%
+  group_by(Edad) %>%
+  summarise(n_personas = n())
+
+# Graficar barras
+ggplot(tabla_frecuencia, aes(x = Edad, y = n_personas, na.rm = TRUE)) +
+  geom_bar(stat = "identity", fill = "lightblue", color = "black") +
+  labs(title = "Numero de casos Positivos por Edad", x = "Edades por intervalos de 10 años", y = "Cantidad de Personas") +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+```
+
+
+
+
+
