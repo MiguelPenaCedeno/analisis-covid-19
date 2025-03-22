@@ -51,24 +51,44 @@ library(dplyr)
 library(ggplot2)
 library(scales)
 
-# Cargar datos
 db <- read.csv("Casos_positivos_de_COVID-19_en_Colombia._20250210.csv")
 
-# Crear intervalos de edad
 bins <- seq(min(db$Edad, na.rm = TRUE), max(db$Edad, na.rm = TRUE), by = 10)
 
-# Agrupar datos por rango de edad
 tabla_frecuencia <- db %>%
   mutate(Edad = cut(Edad, breaks = bins, include.lowest = TRUE)) %>%
   group_by(Edad) %>%
   summarise(n_personas = n())
 
-# Graficar barras
 ggplot(tabla_frecuencia, aes(x = Edad, y = n_personas, na.rm = TRUE)) +
   geom_bar(stat = "identity", fill = "lightblue", color = "black") +
   labs(title = "Numero de casos Positivos por Edad", x = "Edades por intervalos de 10 años", y = "Cantidad de Personas") +
   scale_y_continuous(labels = comma) +
   theme_minimal()
+```
+```{r}
+
+db$Fecha.de.diagnóstico <- as.Date(db$Fecha.de.diagnóstico, format = "%Y-%m-%d")
+
+casos_por_dia <- db %>%
+  group_by(Fecha.de.diagnóstico) %>%
+  summarise(n_casos = n())
+
+ggplot(casos_por_dia, aes(x = Fecha.de.diagnóstico, y = n_casos)) +
+  geom_line(color = "blue") +
+  labs(title = "Número de Casos Positivos de COVID-19 por Día",
+       x = "Fecha de Diagnóstico",
+       y = "Número de Casos") +
+  theme_minimal()
+```
+
+A continuacion vamos a calcular las medidas de tendencia central para las variables que consideramos relevantes hacer este tipo de analisis.
+
+```{r}
+mean(db$Edad)
+median(db$Edad)
+var(db$Edad)
+sd(db$Edad)
 ```
 
 
