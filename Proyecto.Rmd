@@ -6,9 +6,13 @@ date: "2025-02-06"
 
 El siguiente taller aplicado lo realizaron: Miguel Ángel Peña Cedeño, Gabriel Puello, Valentina ..., Juan Jose...
 
-1. La base de datos seleccionada fue de "Casos_positivos_de_COVID-19_en_Colombia._(fecha de descarga).csv" tomada del siguiente link: https://www.datos.gov.co/Salud-y-Protecci-n-Social/Casos-positivos-de-COVID-19-en-Colombia-/gt2j-8ykr/about_data
+1. SELECCIÓN Y DESCRIPCIÓN DE LA BASE DE DATOS
+
+La base de datos seleccionada fue de "Casos_positivos_de_COVID-19_en_Colombia._(fecha de descarga).csv" tomada del siguiente link: https://www.datos.gov.co/Salud-y-Protecci-n-Social/Casos-positivos-de-COVID-19-en-Colombia-/gt2j-8ykr/about_data la hemos seleccionado ya que nos resulto 
 
 Se trata de un dataset realizado por el Instituto Nacional de Salud acerca de los casos positivos de COVID-19 en Colombia, estos datos han sido recopilados desde 2020 y la ultima actualización fue realizada el 14 de agosto de 2024. Son sumamente relevantes en materia de salud para el país y su analisis puede arrojar datos valiosos para preparar mejor a la sociedad colombiana en caso de una futura pandemia ya que este se trata de un fenomeno que eventualmente volverá a ocurrir.
+
+2. IDENTIFICACIÓN Y CLASIFICACIÓN DE LAS VARIABLES
 
 Iniciamos nuestro analisis cargando las 3 librerias que usaremos a lo largo del documento, las dos primeras vistas en clase y la tercera nos ha resultado de utilidad para poder generar graficos mas amigables a la vista al momento de tener que representar valores grandes en variables. Adicionalmente vamos a crear una variable "db" que va a permitir trabajar mas facil con la base de datos y va a leer de un archivo en formato .csv, por ultimo, realizamos str(db) para empezar a ver de que forma está estructurado el dataset.
 
@@ -46,7 +50,9 @@ str(db)
  $ Pertenencia.étnica          : int 
  $ Nombre.del.grupo.étnico     : chr  
 
-3. A continuacion hacemos la presentacion de los datos sirviendonos de una tabla de frecuencia que nos muestre la edad en intervalos de 10 años por el numero de casos de infeccion, esto para no tener que hacer 114 filas distintas en la tabla sino solo 12, vale la pena tener en cuenta que para esto tambien vamos a ignorar todos los valores nulos dentro de la variable.
+3. ORGANIZACIÓN Y PRESENTACIÓN DE LOS DATOS
+
+A continuacion hacemos la presentacion de los datos sirviendonos de una tabla de frecuencia que nos muestre la edad en intervalos de 10 años por el numero de casos de infeccion, esto para no tener que hacer 114 filas distintas en la tabla sino solo 12, vale la pena tener en cuenta que para esto tambien vamos a ignorar todos los valores nulos dentro de la variable.
 
 ```{r}
 
@@ -92,7 +98,9 @@ ggplot(casos_por_dia, aes(x = Fecha.de.diagnóstico, y = n_casos)) +
 ```
 Gracias a la graficacion de este dataframe nos es visible en que momentos se presentaron los picos de infección, podriamos establecer 3 principales que serian: a inicios de 2021, a mitades de 2021 y finalmente a inicios de 2022
 
-4. A continuacion vamos a calcular las medidas de tendencia central para las variables que consideramos relevantes hacer este tipo de analisis.
+4. MEDIDAS DE POSICIÓN
+
+A continuacion vamos a calcular las medidas de tendencia central para las variables que consideramos relevantes hacer este tipo de analisis.
 
 ```{r}
 mean(db$Edad)
@@ -111,10 +119,29 @@ ggplot(db, aes(x = Edad)) +
   theme_minimal()
 ```
 
-Efectivamente podemos ver que esta es una grafica ligeramente sesgada hacia la derecha.
+5. MEDIDAS DE VARIABILIDAD
+
+Ahora vamos a proceder con calcular las medidas de variabilidad:
 
 ```{r}
-var(db$Edad)
+rango <- max(db$Edad) - min(db$Edad)
+rango
 sd(db$Edad)
+var(db$Edad)
 ```
+
+Encontramos que el rango de edades es de 113 años, lo cual indica una población muy diversa en cuanto a edad, desde recién nacidos hasta personas mayores de 100 años. La desviación estándar de aproximadamente 18.5 años, esto indica que las edades de los casos positivos presentan una alta dispersión respecto a la media, que es de 40 años. Esto sugiere que el COVID-19 afectó a personas de un amplio rango etario, no concentrado en un solo grupo de edad.
+
+Por ultimo, la varianza nos indica cuánto varían las edades respecto al promedio. Aunque no es tan intuitiva como la desviación estándar (porque está en unidades al cuadrado), una varianza alta como esta refleja una dispersión considerable en los datos: hay personas muy jóvenes y personas muy mayores entre los casos positivos.
+
+6. MEDIDAS DE POSICIÓN
+
+```{r}
+quantile(db$Edad, probs = c(0.25, 0.5, 0.75), na.rm = TRUE)
+
+quantile(db$Edad, seq(0.1, 0.9, 0.1), na.rm = TRUE)
+
+quantile(db$Edad, probs = c(0.10, 0.25, 0.50, 0.75, 0.90), na.rm = TRUE)
+```
+Las medidas de posición muestran que los casos positivos de COVID-19 se distribuyen principalmente entre los 27 y 53 años. La edad mediana es de 38 años, lo que indica que la mitad de los casos se concentran por debajo de esa edad. Además, el 90% de los casos tiene 65 años o menos, lo cual sugiere que los contagios afectan principalmente a personas adultas jóvenes y de mediana edad.
 
