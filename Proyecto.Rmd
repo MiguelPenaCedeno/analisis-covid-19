@@ -6,18 +6,22 @@ date: "2025-02-06"
 
 El siguiente taller aplicado lo realizaron: Miguel Ángel Peña Cedeño, Gabriel Puello, Valentina ..., Juan Jose...
 
-La base de datos seleccionada fue de "Casos_positivos_de_COVID-19_en_Colombia._(fecha de descarga).csv" tomada del siguiente link: https://www.datos.gov.co/Salud-y-Protecci-n-Social/Casos-positivos-de-COVID-19-en-Colombia-/gt2j-8ykr/about_data
+1. La base de datos seleccionada fue de "Casos_positivos_de_COVID-19_en_Colombia._(fecha de descarga).csv" tomada del siguiente link: https://www.datos.gov.co/Salud-y-Protecci-n-Social/Casos-positivos-de-COVID-19-en-Colombia-/gt2j-8ykr/about_data
 
 Se trata de un dataset realizado por el Instituto Nacional de Salud acerca de los casos positivos de COVID-19 en Colombia, estos datos han sido recopilados desde 2020 y la ultima actualización fue realizada el 14 de agosto de 2024. Son sumamente relevantes en materia de salud para el país y su analisis puede arrojar datos valiosos para preparar mejor a la sociedad colombiana en caso de una futura pandemia ya que este se trata de un fenomeno que eventualmente volverá a ocurrir.
 
-Iniciamos nuestro analisis creando una variable mas corta que va a leer de la base de datos que esta en formato .csv, adicionalmente realizamos str(db) para empezar a ver de que forma esta estructurado el dataset.
+Iniciamos nuestro analisis cargando las 3 librerias que usaremos a lo largo del documento, las dos primeras vistas en clase y la tercera nos ha resultado de utilidad para poder generar graficos mas amigables a la vista al momento de tener que representar valores grandes en variables. Adicionalmente vamos a crear una variable "db" que va a permitir trabajar mas facil con la base de datos y va a leer de un archivo en formato .csv, por ultimo, realizamos str(db) para empezar a ver de que forma está estructurado el dataset.
 
 ```{r}
+library(dplyr)
+library(ggplot2)
+library(scales)
+
 db <- read.csv("Casos_positivos_de_COVID-19_en_Colombia._20250210.csv")
 str(db)
 ```
 
-Encontramos un total de 23 variables y 6.390.971 observaciones en el dataset, de estas se realizo una selección intencional de las variables que consideramos mas relevantes para el analisis, ya que variables como "ID.de.caso" no resultaban especialmente utiles a la hora del analisis, nos quedamos con estas X variables:
+2. Encontramos un total de 23 variables y 6.390.971 observaciones en el dataset, de estas se realizo una selección intencional de las variables que consideramos mas relevantes para el analisis, ya que variables como "ID.de.caso" no resultaban especialmente utiles a la hora del analisis, nos quedamos con estas X variables:
 
  1. fecha.reporte.web           : chr  
  3. Fecha.de.notificación       : chr  
@@ -41,15 +45,10 @@ Encontramos un total de 23 variables y 6.390.971 observaciones en el dataset, de
  $ Tipo.de.recuperación        : chr  
  $ Pertenencia.étnica          : int 
  $ Nombre.del.grupo.étnico     : chr  
- 
 
-A continuacion hacemos la presentacion de los datos sirviendonos de crear intervalos para representar la edad de forma mas comoda ya que dentro de esta variable tenemos valores desde 1 hasta 114, adicionalmente al momento de organizar y graficar los datos vamos a ignorar todos los datos nulos
-
+3. A continuacion hacemos la presentacion de los datos sirviendonos de una tabla de frecuencia que nos muestre la edad en intervalos de 10 años por el numero de casos de infeccion, esto para no tener que hacer 114 filas distintas en la tabla sino solo 12, vale la pena tener en cuenta que para esto tambien vamos a ignorar todos los valores nulos dentro de la variable.
 
 ```{r}
-library(dplyr)
-library(ggplot2)
-library(scales)
 
 db <- read.csv("Casos_positivos_de_COVID-19_en_Colombia._20250210.csv")
 
@@ -59,13 +58,23 @@ tabla_frecuencia <- db %>%
   mutate(Edad = cut(Edad, breaks = bins, include.lowest = TRUE)) %>%
   group_by(Edad) %>%
   summarise(n_personas = n())
+tabla_frecuencia
+```
+A continuacion vamos a visualizar la misma tabla de frecuencia haciendo uso de un grafico de barras, aqui es donde nos resulto util la inclusion de la libreria (scales) en los valores del eje y.
 
-ggplot(tabla_frecuencia, aes(x = Edad, y = n_personas, na.rm = TRUE)) +
-  geom_bar(stat = "identity", fill = "lightblue", color = "black") +
+```{r}
+ggplot(tabla_frecuencia, aes(x = Edad, y = n_personas)) +
+  geom_bar(stat = "identity", fill = "lightblue", color = "black", na.rm = TRUE) +
   labs(title = "Numero de casos Positivos por Edad", x = "Edades por intervalos de 10 años", y = "Cantidad de Personas") +
   scale_y_continuous(labels = comma) +
   theme_minimal()
 ```
+
+Para continuar con la presentacion de los datos nos ayudaremos de una segunda tabla de frecuencias
+
+
+En el siguiente analisis vamos a hacer un dataframe agrupando el numero de casos totales por dia por las fechas de diagnostico de infección
+
 ```{r}
 
 db$Fecha.de.diagnóstico <- as.Date(db$Fecha.de.diagnóstico, format = "%Y-%m-%d")
@@ -81,17 +90,31 @@ ggplot(casos_por_dia, aes(x = Fecha.de.diagnóstico, y = n_casos)) +
        y = "Número de Casos") +
   theme_minimal()
 ```
+Gracias a la graficacion de este dataframe nos es visible en que momentos se presentaron los picos de infección, podriamos establecer 3 principales que serian: a inicios de 2021, a mitades de 2021 y finalmente a inicios de 2022
 
-A continuacion vamos a calcular las medidas de tendencia central para las variables que consideramos relevantes hacer este tipo de analisis.
+4. A continuacion vamos a calcular las medidas de tendencia central para las variables que consideramos relevantes hacer este tipo de analisis.
 
 ```{r}
 mean(db$Edad)
 median(db$Edad)
+
+```
+Encontramos que el promedio de edad de los casos positivos es de aproximadamente 40 años, y la mediana es de 38 años, lo que sugiere una distribución muy ligeramente sesgada.
+
+Vamos a graficar la edad ya no por intervalos para ver si podemos visualizar esto mismo:
+
+```{r}
+ggplot(db, aes(x = Edad)) +
+  geom_histogram(bins = 40, color = "black", fill = "skyblue", na.rm = TRUE) +
+  labs(title = "Distribución del número de infecciones por edad",
+    x = "Edades", y = "Número de personas") +
+  theme_minimal()
+```
+
+Efectivamente podemos ver que esta es una grafica ligeramente sesgada hacia la derecha.
+
+```{r}
 var(db$Edad)
 sd(db$Edad)
 ```
-
-
-
-
 
