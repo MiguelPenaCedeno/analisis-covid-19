@@ -98,7 +98,7 @@ ggplot(casos_por_dia, aes(x = Fecha.de.diagnóstico, y = n_casos)) +
 ```
 Gracias a la graficacion de este dataframe nos es visible en que momentos se presentaron los picos de infección, podriamos establecer 3 principales que serian: a inicios de 2021, a mitades de 2021 y finalmente a inicios de 2022
 
-4. MEDIDAS DE POSICIÓN
+4. MEDIDAS DE TENDENCIA CENTRAL
 
 A continuacion vamos a calcular las medidas de tendencia central para las variables que consideramos relevantes hacer este tipo de analisis.
 
