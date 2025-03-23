@@ -136,6 +136,8 @@ Por ultimo, la varianza nos indica cuánto varían las edades respecto al promed
 
 6. MEDIDAS DE POSICIÓN
 
+Para las medidas de posición vamos a partir de la variable de edad:
+
 ```{r}
 quantile(db$Edad, probs = c(0.25, 0.5, 0.75), na.rm = TRUE)
 
@@ -144,4 +146,74 @@ quantile(db$Edad, seq(0.1, 0.9, 0.1), na.rm = TRUE)
 quantile(db$Edad, probs = c(0.10, 0.25, 0.50, 0.75, 0.90), na.rm = TRUE)
 ```
 Las medidas de posición muestran que los casos positivos de COVID-19 se distribuyen principalmente entre los 27 y 53 años. La edad mediana es de 38 años, lo que indica que la mitad de los casos se concentran por debajo de esa edad. Además, el 90% de los casos tiene 65 años o menos, lo cual sugiere que los contagios afectan principalmente a personas adultas jóvenes y de mediana edad.
+
+7. APLICACIÓN DE DISTRIBUCIONES DE PROBABILIDAD
+
+```{r}
+library(dplyr)
+
+db$Fecha.de.muerte <- as.Date(db$Fecha.de.muerte)
+
+fallecimientos_por_dia <- db %>%
+  filter(!is.na(Fecha.de.muerte)) %>%
+  group_by(Fecha.de.muerte) %>%
+  summarise(n_fallecidos = n())
+
+lambda <- mean(fallecimientos_por_dia$n_fallecidos)
+lambda
+
+1 - ppois(150, lambda)  
+ppois(140, lambda) - ppois(120, lambda)
+```
+
+De acuerdo con el modelo de distribución de Poisson, la cantidad diaria promedio de fallecimientos por COVID-19 es de aproximadamente 133 personas.
+
+Existe una probabilidad del 61% de que en un día ocurran entre 121 y 140 fallecimientos, lo que representa el comportamiento más habitual.
+
+En contraste, la probabilidad de que un día se presenten más de 150 muertes es del 6.2%, lo que sugiere que esos días corresponden a situaciones menos frecuentes, posiblemente asociadas a picos de saturación del sistema de salud.
+
+8. APLICACIÓN DEL MODELO NORMAL
+
+```{r}
+1 - pnorm(40, mean(db$Edad, na.rm = TRUE), sd(db$Edad, na.rm = TRUE))
+
+1 - pnorm(65, mean(db$Edad, na.rm = TRUE), sd(db$Edad, na.rm = TRUE))
+```
+
+
+
+
+
+```{r}
+ggplot(db, aes(x = Estado, y = Edad)) + geom_boxplot()
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# 1. Normalizar texto y eliminar NA
+db_limpio <- db %>%
+  filter(!is.na(Estado)) %>%                   # eliminar NA
+  mutate(Estado = tolower(Estado)) %>%         # pasar todo a minúsculas
+  mutate(Estado = recode(Estado,               # unificar etiquetas
+                         "leve" = "Leve",
+                         "grave" = "Grave",
+                         "moderado" = "Moderado",
+                         "fallecido" = "Fallecido")) %>%
+  filter(Estado %in% c("Leve", "Grave", "Moderado", "Fallecido"))  # eliminar valores fuera de los deseados
+
+ggplot(db_limpio, aes(x = Estado, y = Edad)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(
+    title = "Distribución de edad por estado del caso",
+    x = "Estado del caso",
+    y = "Edad"
+  ) +
+  theme_minimal()
+```
+El gráfico muestra una relación clara entre edad y gravedad del COVID-19. A medida que la edad aumenta, también lo hace la probabilidad de que el caso sea grave o termine en fallecimiento. Por el contrario, los casos leves predominan entre personas más jóvenes.
+
+
+9. INTERPRETACIÓN DE RESULTADOS Y CONCLUSIONES
 
