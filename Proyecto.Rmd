@@ -96,7 +96,7 @@ ggplot(casos_por_dia, aes(x = Fecha.de.diagnóstico, y = n_casos)) +
        y = "Número de Casos") +
   theme_minimal()
 ```
-Gracias a la graficacion de este dataframe nos es visible en que momentos se presentaron los picos de infección, podriamos establecer 3 principales que serian: a inicios de 2021, a mitades de 2021 y finalmente a inicios de 2022
+Gracias a la graficacion de este dataframe nos es visible en que momentos se presentaron los picos de infección, podriamos establecer 3 principales que serian: a inicios de 2021, a mitades de 2021 y finalmente a inicios de 2022.
 
 4. MEDIDAS DE TENDENCIA CENTRAL
 
@@ -180,13 +180,17 @@ En contraste, la probabilidad de que un día se presenten más de 150 muertes es
 1 - pnorm(65, mean(db$Edad, na.rm = TRUE), sd(db$Edad, na.rm = TRUE))
 ```
 
+9. BONO (BOXPLOT)
 
-
+Para el bono hemos querido mirar un boxplot por estado para comparar las edades en el dataset, sin embargo nos hemos encontrado con el problema de que hay tanto valores nulos, como valores que se repiten de forma erronea unicamente porque se escriben con un caracter diferente, como es el caso de las mayusculas entre "leve", "Leve" y "LEVE", esto lo podemos observar aquí:
 
 
 ```{r}
 ggplot(db, aes(x = Estado, y = Edad)) + geom_boxplot()
 ```
+
+
+Debido a esto hemos eliminado los valores nulos y agrupado las categorias para que no se repitan y podamos tener una visualización de los datos mejor:
 
 ```{r}
 library(dplyr)
@@ -196,7 +200,8 @@ library(ggplot2)
 db_limpio <- db %>%
   filter(!is.na(Estado)) %>%                   # eliminar NA
   mutate(Estado = tolower(Estado)) %>%         # pasar todo a minúsculas
-  mutate(Estado = recode(Estado,               # unificar etiquetas
+  mutate(Estado = recode(Estado, 
+                         "LEVE" = "Leve", # unificar etiquetas
                          "leve" = "Leve",
                          "grave" = "Grave",
                          "moderado" = "Moderado",
@@ -215,5 +220,4 @@ ggplot(db_limpio, aes(x = Estado, y = Edad)) +
 El gráfico muestra una relación clara entre edad y gravedad del COVID-19. A medida que la edad aumenta, también lo hace la probabilidad de que el caso sea grave o termine en fallecimiento. Por el contrario, los casos leves predominan entre personas más jóvenes.
 
 
-9. INTERPRETACIÓN DE RESULTADOS Y CONCLUSIONES
-
+10. INTERPRETACIÓN DE RESULTADOS Y CONCLUSIONES
